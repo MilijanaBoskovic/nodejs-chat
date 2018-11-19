@@ -14,8 +14,94 @@ REAL-TIME WEB APPS WITH Socket.io
           => index.html-> is going to be markup page which we serve when someone visits the app
 
 
-*path module: nodejs.org=>docs=>api reference=>path=>
+*path built in module: nodejs.org=>docs=>api reference=>path=> const path=require('path') ==>we dont need to install built in modules
              =>join() method: takes partial paths and joins them together
              =>if we have paths wit going back like our relative paths it removes that part and make clean path:
              ---for example:  console.log(__dirname +'\\..\\public') ===> C:\Users\inquiry\Desktop\node\node-chat-app\server\..\public
                               path.join(__dirname ,'\\..\\public')   ===>  C:\Users\inquiry\Desktop\node\node-chat-app\public
+
+=> this is the path we want to provide to express static middleware which will need to serve public folder
+
+=>we need to set up express localy: => npm i express@4.14.0 --save
+
+
+------------------------------------------------------
+ADDING SOCKET.IO to an APP
+------------------------------------------------------
+=>we need to congigure server to allow to upcoming web socket connections
+=>this means server should be able to accept connections and we will seting up the client to make the connection=> after that we will be able to send data in both directions
+=> library socketio : has backend and frontend library we will be using both: to set up the server which support web sockets and create frontend which communicate with Server
+=> npm i socket.io@1.4.8 --save
+=> we need to make few changes to our server file=> const socketIO= require('socket.io')
+*currently we use express to create web server=> express in back use http npm library to create the server
+ =>we also need to use it ,configuring express to work with it, then and only then we will be able to add socket.io support
+ => we will load node built in module: const http=require('http')
+ =>we are going to create server: var server=http.createServer ----->app.listen is also calling this method passing in the app as the argument for createServer
+  =>createServer takes a function which looks realy similar to one of our express callbacks, it gets called with req and res
+  =>http is actually used behind the scene for express,they integrated so much so we can do=>
+  => createServer(app)
+  =>we are now using http server instead of express server
+  =>
+            var app = express();
+            var server=http.createServer(app);
+
+            app.use(express.static(publicPath));
+
+            server.listen(3000, ()=>{
+              console.log(`Server start listening on port ${port}`);
+            });
+* now we need to configure server to use Socket.io:
+
+  => first: var io=socketIO(server); //we are passing server we want to use with our web sockets
+  => it returns web socket server, with it we can do anything we want in terms of  emiting or listening events
+  => this is how we will comunicate between server and the client
+
+  =>with this we are ready to accept new connections, the problem is we dont have any connections to acccept
+  =>when we load our web page we do not do anything, we are not acctualy connecting to the server and we are going to need manualy run some js code to initiate that connection process
+
+*when we integrated socket.io with our server we acctualy get access to few cool things:
+ 1) we get access to route which acccepts incoming connections which means we can now accept web socket connections
+ 2) we get access to a js library that makes realy easy to work with socket.io on the client : localhost:3000/socket.io/socket.io.js
+    => it is js library which contains all of the code we are going to need on a client to make a connection and to transfer the data(in both directions)
+    =>to make the connection in our html file, is load this in : we will add on the ebd body <script> tag:
+          <script> src="/socket.io/socket.io.js" </script>
+    => to load in an external file we are going to use src atribute providing the path which is realtive to our server
+    => we are now loading the library and on the browser we will have access to all sorts of methods available because of socket library
+    =>one of this methods will let us to initiate connection request:
+       <script>
+            var socket=io();
+       </script>
+    =>this time instead of loading an external script we are going to write some js which is going to run just after socket.io library loads
+    =>we are calling io method available to us because we loaded library, it is not native to the browser
+    =>when we call it we actually initiating the request, we are making request from client to the server to open up the web socket and keep that connection open
+    =>it returns socket, and this variable is critical for communication, it is exactly what we need in order to listen for data from the server
+    =>and in order to send data to the server
+
+=> we go to localhost:3000 and open chrome dev tools to do little debuging
+=>we go to network panel which keeps track of all requests made by your web page
+=>after refreshing the page we can see the list of network requests =>we have 6 => one for html file
+                                                                               =>second for js file which give us library and access for calling methods
+                                                                               =>next 4 are realted to starting up and maintaining connection
+=> now we have lie connection between client and server and we can start communication
+=> this connection can be anything at all, this comes in form of any event
+=>events can be emitted from wheather client or server and whether client or server can listen for events
+=> the whole client server relationship is entirely run via this events
+=> default ones,built in events: let you keep track of new users and disconnecting users=> this meanswe will be able to do something like to great a user when they join to our application
+=> in server we will call: io.on() which let us register event listener: it accepts name of event and callback function in which we can do something when that event happens
+=> event connection let us to listen for a new connection meaning that the client connected to the server
+            io.on('connection',(socket)=>{
+                console.log('New user connected');
+            });
+=>socket argument is realy similar to socket argument we have acces to in our html and it is representing individual socket
+
+=>it should already be printed in console if our server was run with nodemon
+=>to explain why we need to understand one thing about web sockets=> they are persistent tehnology
+=>the both,client and server keep communicating channel open for as long both of them want to (until one of them closes)
+=>when connection drops the client is still going to try to reconnect
+=>when we restart the server with nodemon, there is like 1/4s when the server is down and client notices that =>thats why we see message in console
+
+
+*connection event also exists in the client,this means we can do something in client when we succesfuly connect to the server
+=>  socket.on('connect',()=>{
+      console.log('connected to server');
+    });
