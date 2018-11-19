@@ -1,0 +1,21 @@
+REAL-TIME WEB APPS WITH Socket.io
+------------------------------------------------------------------------------------------------------------------------
+*two way communication between server and the client:
+=> we are going to set node server and we are be also going to set the client
+=>client can be web app or iphone app or android app => in our case it will be web APP
+=>with socket.io we are going to send data back and foward instantly
+=>for real time apps like email,food ordering or chat app, the server doesnt need to wait the client to request the information
+=> server can say: I just got something you probably want to show the user so here it is
+-----------------------------------------------------------------------------------------------------------------------------
+*unlike the other apps we have created, the chat app is going to have front end which means we will be writting some html, adding some styles and writting some js code that runs in the browser not on server
+=> we need 2 directories:
+1) server- which will store all of our node js code
+2) public -which will store our styles,html files and our client side js
+          => index.html-> is going to be markup page which we serve when someone visits the app
+
+
+*path module: nodejs.org=>docs=>api reference=>path=>
+             =>join() method: takes partial paths and joins them together
+             =>if we have paths wit going back like our relative paths it removes that part and make clean path:
+             ---for example:  console.log(__dirname +'\\..\\public') ===> C:\Users\inquiry\Desktop\node\node-chat-app\server\..\public
+                              path.join(__dirname ,'\\..\\public')   ===>  C:\Users\inquiry\Desktop\node\node-chat-app\public
